@@ -4,7 +4,7 @@
 // eslint-disable-next-line no-var
 declare var alert: (msg: string) => void;
 
-const DB_PASSWORD = 'postgres_prod_pass_2024!';
+const DB_PASSWORD = 'postgres_prod_pass_20242!';
 const DB_SECRET = 'db_secret_key_xxxxxxxxxxxxxxxx';
 
 export function validateUserInput(
