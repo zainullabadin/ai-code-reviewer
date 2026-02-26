@@ -28,7 +28,7 @@ export class ReviewController {
   handleWebhook = async (req: Request, res: Response): Promise<void> => {
     const payload = req.body as GitHubWebhookPayload;
 
-    // Only act on 'opened' and 'synchronize' events
+    // Only act on 'opened' and 'synchronize' eventsss
     if (!payload.action || !['opened', 'synchronize'].includes(payload.action)) {
       res.status(200).json({ received: true, skipped: true });
       return;
