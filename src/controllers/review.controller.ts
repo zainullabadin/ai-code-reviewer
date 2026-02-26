@@ -26,8 +26,20 @@ export class ReviewController {
    * then process asynchronously.
    */
   handleWebhook = async (req: Request, res: Response): Promise<void> => {
-    const payload = req.body as GitHubWebhookPayload;
-    console.log('[Webhook] Full payload:', JSON.stringify(payload, null, 2));
+    // GitHub sends form-encoded webhooks with JSON inside a 'payload' field
+    let payload: GitHubWebhookPayload;
+    if (typeof req.body.payload === 'string') {
+      try {
+        payload = JSON.parse(req.body.payload);
+      } catch (err) {
+        console.error('[Webhook] Failed to parse payload:', err);
+        res.status(400).json({ error: 'Invalid payload JSON' });
+        return;
+      }
+    } else {
+      payload = req.body as GitHubWebhookPayload;
+    }
+    
     console.log('[Webhook] Received event:', payload.action, payload.number);
 
     // Only act on 'opened' and 'synchronize' events
