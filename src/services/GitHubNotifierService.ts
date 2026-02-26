@@ -59,7 +59,7 @@ export class GitHubNotifierService implements IVCSNotifier {
       );
 
       console.info(
-        `[GitHubNotifier] Posted ${limitedComments.length} comment(s) to ${prContext.owner}/${prContext.repo}#${prContext.pullNumber}${truncated ? ` (${comments.length} total)` : ''}`,
+        `[GitHubNotifier] Posted ${limitedComments.length} comment(s)${truncated ? ` of ${comments.length}` : ''}`,
       );
     } catch (err) {
       if (axios.isAxiosError(err)) {

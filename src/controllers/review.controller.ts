@@ -39,19 +39,15 @@ export class ReviewController {
     } else {
       payload = req.body as GitHubWebhookPayload;
     }
-    
-    console.log('[Webhook] Received event:', payload.action, payload.number);
 
     // Only act on 'opened' and 'synchronize' events
     if (!payload.action || !['opened', 'synchronize'].includes(payload.action)) {
-      console.log('[Webhook] Skipped - not a PR open/sync event');
       res.status(200).json({ received: true, skipped: true });
       return;
     }
 
     // Must have PR data to proceed
     if (!payload.pull_request || !payload.repository || !payload.number) {
-      console.log('[Webhook] Skipped - missing PR data');
       res.status(200).json({ received: true, skipped: true, reason: 'missing PR data' });
       return;
     }
@@ -70,13 +66,13 @@ export class ReviewController {
       headBranch: payload.pull_request.head.ref,
     };
 
-    console.log('[Webhook] Processing PR:', `${prContext.owner}/${prContext.repo}#${prContext.pullNumber}`);
+    console.log(`[Webhook] 🔍 Reviewing PR #${prContext.pullNumber}: ${prContext.title}`);
     
     try {
       await this.orchestrationService.handlePullRequest(prContext);
-      console.log('[Webhook] ✅ Review completed successfully');
+      console.log('[Webhook] ✅ Review posted');
     } catch (err) {
-      console.error('[Webhook] ❌ Review failed:', err);
+      console.error('[Webhook] ❌ Failed:', err);
     }
   };
 }

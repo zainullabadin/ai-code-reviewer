@@ -20,9 +20,9 @@ import { env } from '../config/env';
 const diffParser = new DiffParserService();
 
 const layers = [
-  new RegexRuleLayer(),         // runs first — fast, zero network calls
-  new HeuristicRuleLayer(),     // runs second — CPU-only heuristics
-  new GroqAILayer(env.groqApiKey), // runs last — external AI call
+  // new RegexRuleLayer(),         // TEMPORARILY DISABLED - too noisy
+  // new HeuristicRuleLayer(),     // TEMPORARILY DISABLED - too noisy
+  new GroqAILayer(env.groqApiKey), // Only AI - focus on functional issues
 ];
 
 const notifier = new GitHubNotifierService(env.githubToken);
@@ -51,12 +51,6 @@ reviewRouter.post(
 // Phase 3: GitHub pull_request webhook event
 reviewRouter.post(
   '/webhook',
-  (req, _res, next) => {
-    console.log('[Middleware] Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('[Middleware] Body before parsing:', req.body);
-    console.log('[Middleware] Raw body type:', typeof (req as any).rawBody);
-    next();
-  },
   // verifyWebhookSignature(env.githubWebhookSecret), // TEMPORARILY DISABLED for local testing
   validateBody(GitHubWebhookSchema),
   asyncHandler(reviewController.handleWebhook),

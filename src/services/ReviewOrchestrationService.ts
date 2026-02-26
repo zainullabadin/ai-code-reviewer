@@ -30,8 +30,6 @@ export class ReviewOrchestrationService {
 
   /** Phase 3 entry-point — fetches diff from GitHub, runs pipeline, posts comments back. */
   async handlePullRequest(prContext: IPRContext): Promise<void> {
-    console.log('[Orchestration] Starting review for PR #' + prContext.pullNumber);
-    
     if (!this.notifier) {
       throw new APIError('No VCS notifier configured', 500);
     }
@@ -40,22 +38,15 @@ export class ReviewOrchestrationService {
     }
 
     // 1. Fetch the raw diff from GitHub
-    console.log('[Orchestration] Fetching diff from GitHub...');
     const rawDiff = await this.diffFetcher.fetchDiff(prContext);
-    console.log('[Orchestration] Diff fetched, length:', rawDiff.length);
 
     // 2. Parse + run the review pipeline
-    console.log('[Orchestration] Running review pipeline...');
     const comments = await this.analyzeRawDiff(rawDiff);
-    console.log('[Orchestration] Pipeline complete, found', comments.length, 'comment(s)');
+    console.log(`[Orchestration] Found ${comments.length} issue(s)`);
 
     // 3. Post comments back to the PR
     if (comments.length > 0) {
-      console.log('[Orchestration] Posting comments to GitHub...');
       await this.notifier.postReview(prContext, comments);
-      console.log('[Orchestration] Comments posted successfully');
-    } else {
-      console.log('[Orchestration] No comments to post');
     }
   }
 }
