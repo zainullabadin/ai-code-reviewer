@@ -21,8 +21,17 @@ export class GitHubNotifierService implements IVCSNotifier {
 
     const url = `${this.baseUrl}/repos/${prContext.owner}/${prContext.repo}/pulls/${prContext.pullNumber}/reviews`;
 
+    // GitHub limits reviews to ~30 comments. Prioritize by severity.
+    const MAX_COMMENTS = 30;
+    const severityOrder = { error: 1, warning: 2, info: 3 };
+    const sortedComments = [...comments].sort(
+      (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
+    );
+    const limitedComments = sortedComments.slice(0, MAX_COMMENTS);
+    const truncated = comments.length > MAX_COMMENTS;
+
     // Map our IReviewComment[] to GitHub's expected review comment format
-    const ghComments = comments.map((c) => ({
+    const ghComments = limitedComments.map((c) => ({
       path: c.filename,
       line: c.line,
       side: 'RIGHT' as const,
@@ -34,7 +43,9 @@ export class GitHubNotifierService implements IVCSNotifier {
         url,
         {
           commit_id: prContext.headCommitSha,
-          body: `AI Code Review — found ${comments.length} issue(s).`,
+          body: truncated
+            ? `AI Code Review — found ${comments.length} issue(s), showing top ${MAX_COMMENTS} by severity.`
+            : `AI Code Review — found ${comments.length} issue(s).`,
           event: 'COMMENT',
           comments: ghComments,
         },
@@ -48,7 +59,7 @@ export class GitHubNotifierService implements IVCSNotifier {
       );
 
       console.info(
-        `[GitHubNotifier] Posted ${comments.length} comment(s) to ${prContext.owner}/${prContext.repo}#${prContext.pullNumber}`,
+        `[GitHubNotifier] Posted ${limitedComments.length} comment(s) to ${prContext.owner}/${prContext.repo}#${prContext.pullNumber}${truncated ? ` (${comments.length} total)` : ''}`,
       );
     } catch (err) {
       if (axios.isAxiosError(err)) {
