@@ -29,8 +29,14 @@ export class ReviewController {
     const payload = req.body as GitHubWebhookPayload;
 
     // Only act on 'opened' and 'synchronize' events
-    if (!['opened', 'synchronize'].includes(payload.action)) {
+    if (!payload.action || !['opened', 'synchronize'].includes(payload.action)) {
       res.status(200).json({ received: true, skipped: true });
+      return;
+    }
+
+    // Must have PR data to proceed
+    if (!payload.pull_request || !payload.repository || !payload.number) {
+      res.status(200).json({ received: true, skipped: true, reason: 'missing PR data' });
       return;
     }
 
