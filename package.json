@@ -1,7 +1,7 @@
 {
   "name": "ai-code-reviewer",
   "version": "0.1.0",
-  "description": "AI-Powered Code Review Bot — SOLID principles learning project",
+  "description": "AI-Powered Code Review Bot",
   "type": "module",
   "main": "index.ts",
   "scripts": {
