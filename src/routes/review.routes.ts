@@ -20,9 +20,10 @@ import { env } from '../config/env';
 const diffParser = new DiffParserService();
 
 const layers = [
-  new RegexRuleLayer(),         // runs first — fast, zero network calls
-  new HeuristicRuleLayer(),     // runs second — CPU-only heuristics
-  new GroqAILayer(env.groqApiKey), // runs last — external AI call
+  // RegexRuleLayer and HeuristicRuleLayer disabled - too noisy
+  // new RegexRuleLayer(),
+  // new HeuristicRuleLayer(),
+  new GroqAILayer(env.groqApiKey, env.groqModel), // Production-ready AI review with SOLID principles
 ];
 
 const notifier = new GitHubNotifierService(env.githubToken);

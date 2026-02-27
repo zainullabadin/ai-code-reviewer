@@ -60,15 +60,15 @@ export class GitHubNotifierService implements IVCSNotifier {
     }
   }
 
-  /** Adds severity emoji and source attribution to the comment body. */
+  /** Formats comment for GitHub - clean and professional */
   private formatComment(comment: IReviewComment): string {
     const emoji =
       comment.severity === 'error'
-        ? '❌'
+        ? '🔴'
         : comment.severity === 'warning'
-          ? '⚠️'
-          : 'ℹ️';
+          ? '🟡'
+          : '💡';
 
-    return `${emoji} **${comment.severity.toUpperCase()}** (${comment.source})\n\n${comment.body}`;
+    return `${emoji} ${comment.body}`;
   }
 }
