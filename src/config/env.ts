@@ -12,6 +12,7 @@ for (const envVar of requiredEnvVars) {
 export const env = {
   port: Number(process.env['PORT'] ?? 3000),
   groqApiKey: process.env['GROQ_API_KEY'] as string,
+  groqModel: process.env['GROQ_MODEL'] ?? 'llama-3.3-70b-versatile', // 70b for better quality
   githubToken: process.env['GITHUB_TOKEN'] as string,
   githubWebhookSecret: process.env['GITHUB_WEBHOOK_SECRET'] as string,
   nodeEnv: process.env['NODE_ENV'] ?? 'development',

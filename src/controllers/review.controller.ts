@@ -26,11 +26,37 @@ export class ReviewController {
    * then process asynchronously.
    */
   handleWebhook = async (req: Request, res: Response): Promise<void> => {
-    const payload = req.body as GitHubWebhookPayload;
+    // GitHub can send webhooks as form-encoded with JSON in 'payload' field
+    let payload: GitHubWebhookPayload;
+    
+    if (typeof req.body.payload === 'string') {
+      try {
+        payload = JSON.parse(req.body.payload);
+      } catch (err) {
+        console.error('[Webhook] Failed to parse form-encoded payload:', err);
+        res.status(400).json({ error: 'Invalid payload JSON' });
+        return;
+      }
+    } else {
+      payload = req.body as GitHubWebhookPayload;
+    }
+
+    console.log(`[Webhook] Received ${payload.action} event`);
 
     // Only act on 'opened' and 'synchronize' events
-    if (!['opened', 'synchronize'].includes(payload.action)) {
+    if (!payload.action || !['opened', 'synchronize'].includes(payload.action)) {
       res.status(200).json({ received: true, skipped: true });
+      return;
+    }
+
+    // Must have PR data to proceed
+    if (!payload.pull_request || !payload.repository || !payload.number) {
+      console.error('[Webhook] Missing required fields:', {
+        hasPR: !!payload.pull_request,
+        hasRepo: !!payload.repository,
+        hasNumber: !!payload.number,
+      });
+      res.status(200).json({ received: true, skipped: true, reason: 'missing PR data' });
       return;
     }
 
@@ -42,12 +68,20 @@ export class ReviewController {
       repo: payload.repository.name,
       pullNumber: payload.number,
       headCommitSha: payload.pull_request.head.sha,
+      previousCommitSha: payload.action === 'synchronize' ? payload.before : undefined,
       title: payload.pull_request.title,
       description: payload.pull_request.body ?? undefined,
       baseBranch: payload.pull_request.base.ref,
       headBranch: payload.pull_request.head.ref,
     };
 
-    await this.orchestrationService.handlePullRequest(prContext);
+    console.log(`[Webhook] 🔍 Reviewing PR #${prContext.pullNumber}: ${prContext.title}`);
+
+    try {
+      await this.orchestrationService.handlePullRequest(prContext);
+      console.log('[Webhook] ✅ Review completed');
+    } catch (err) {
+      console.error('[Webhook] ❌ Failed:', err);
+    }
   };
 }
