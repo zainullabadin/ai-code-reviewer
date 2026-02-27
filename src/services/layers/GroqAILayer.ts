@@ -57,23 +57,32 @@ export class GroqAILayer implements IReviewLayer {
   // ---- private helpers ---------------------------------------------------
 
   private getSystemPrompt(): string {
-    return `You are an expert code reviewer. Analyze the provided code diff and return a JSON object with a "comments" array.
+    return `You are an expert code reviewer focused on finding FUNCTIONAL problems, not style issues.
 
-Each comment object must have these fields:
-- "filename": string (the file path)
-- "line": number (line number in the new file)
-- "body": string (your review comment, concise and actionable)
+Analyze the code diff and return a JSON object with a "comments" array.
+
+Each comment must have:
+- "filename": string (file path)
+- "line": number (line number)
+- "body": string (concise, actionable feedback)
 - "severity": "info" | "warning" | "error"
 
-Focus on:
-- Bugs and logical errors
-- Security vulnerabilities
-- Performance issues
-- Code quality and best practices
+FOCUS ON:
+- Bugs and logic errors (off-by-one, null pointer, race conditions)
+- Security vulnerabilities (SQL injection, XSS, insecure crypto)
+- Performance issues (N+1 queries, unnecessary loops, memory leaks)
+- Correctness issues (wrong algorithm, broken edge cases)
 
-Do NOT flag style issues, naming conventions, or missing comments.
-Return {"comments": []} if you find no issues.
-Respond ONLY with valid JSON, no markdown fences.`;
+IGNORE:
+- console.log statements
+- Hardcoded strings/secrets
+- TODO/FIXME comments
+- Naming conventions
+- Code style
+- Missing comments
+
+Return {"comments": []} if you find no functional issues.
+Respond ONLY with valid JSON, no markdown.`;
   }
 
   private buildDiffSummary(diff: IParsedDiff): string {

@@ -13,8 +13,10 @@ export type ReviewRequest = z.infer<typeof ReviewRequestSchema>;
 // Phase 3: GitHub webhook — pull_request event payload (relevant fields only)
 // ---------------------------------------------------------------------------
 export const GitHubWebhookSchema = z.object({
-  action: z.string(),
-  number: z.number(),
+  action: z.string().optional(),
+  number: z.number().optional(),
+  before: z.string().optional(), // Previous commit SHA (for synchronize events)
+  after: z.string().optional(),  // New commit SHA (for synchronize events)
   pull_request: z.object({
     title: z.string(),
     body: z.string().nullable(),
@@ -25,13 +27,13 @@ export const GitHubWebhookSchema = z.object({
     base: z.object({
       ref: z.string(),
     }),
-  }),
+  }).optional(),
   repository: z.object({
     name: z.string(),
     owner: z.object({
       login: z.string(),
     }),
-  }),
-});
+  }).optional(),
+}).passthrough(); // Allow extra fields GitHub sends
 
 export type GitHubWebhookPayload = z.infer<typeof GitHubWebhookSchema>;

@@ -6,6 +6,7 @@ export interface IPRContext {
   repo: string;
   pullNumber: number;
   headCommitSha: string;
+  previousCommitSha?: string; // For incremental reviews (synchronize events)
   title?: string;
   description?: string;
   baseBranch?: string;

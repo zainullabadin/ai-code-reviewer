@@ -25,6 +25,14 @@ export class ReviewOrchestrationService {
   /** Phase 2 entry-point — accepts a raw diff string, returns review comments. */
   async analyzeRawDiff(rawDiff: string): Promise<IReviewComment[]> {
     const parsed = this.diffParser.parse(rawDiff);
+    
+    // Early exit: skip analysis if no additions
+    const hasAdditions = parsed.files.some((f) => f.additions > 0);
+    if (!hasAdditions) {
+      console.log('[Orchestration] No additions found, skipping analysis');
+      return [];
+    }
+    
     return this.pipeline.run(parsed);
   }
 
@@ -42,6 +50,7 @@ export class ReviewOrchestrationService {
 
     // 2. Parse + run the review pipeline
     const comments = await this.analyzeRawDiff(rawDiff);
+    console.log(`[Orchestration] Found ${comments.length} issue(s)`);
 
     // 3. Post comments back to the PR
     if (comments.length > 0) {
