@@ -20,11 +20,7 @@ export class ReviewController {
     res.status(200).json(toReviewResponseDTO(comments));
   };
 
-  /**
-   * Phase 3: POST /api/review/webhook — GitHub pull_request event.
-   * Acknowledge the webhook immediately (GitHub enforces a 10-second timeout),
-   * then process asynchronously.
-   */
+
   handleWebhook = async (req: Request, res: Response): Promise<void> => {
     // GitHub sends form-encoded webhooks with JSON inside a 'payload' field
     let payload: GitHubWebhookPayload;
@@ -60,6 +56,7 @@ export class ReviewController {
       repo: payload.repository.name,
       pullNumber: payload.number,
       headCommitSha: payload.pull_request.head.sha,
+      previousCommitSha: payload.action === 'synchronize' ? payload.before : undefined,
       title: payload.pull_request.title,
       description: payload.pull_request.body ?? undefined,
       baseBranch: payload.pull_request.base.ref,

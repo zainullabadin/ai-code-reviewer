@@ -15,6 +15,8 @@ export type ReviewRequest = z.infer<typeof ReviewRequestSchema>;
 export const GitHubWebhookSchema = z.object({
   action: z.string().optional(),
   number: z.number().optional(),
+  before: z.string().optional(), // Previous commit SHA (for synchronize events)
+  after: z.string().optional(),  // New commit SHA (for synchronize events)
   pull_request: z.object({
     title: z.string(),
     body: z.string().nullable(),

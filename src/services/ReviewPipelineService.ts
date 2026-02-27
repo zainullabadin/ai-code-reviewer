@@ -13,20 +13,21 @@ export class ReviewPipelineService implements IReviewPipeline {
   constructor(private readonly layers: IReviewLayer[]) {}
 
   async run(diff: IParsedDiff): Promise<IReviewComment[]> {
-    const allComments: IReviewComment[] = [];
+    // Run layers in parallel — they're independent
+    const results = await Promise.allSettled(
+      this.layers.map(async (layer) => {
+        try {
+          return await layer.analyze(diff);
+        } catch (err) {
+          console.error(`[ReviewPipeline] Layer "${layer.name}" threw:`, err);
+          return []; // graceful degradation
+        }
+      }),
+    );
 
-    // Run layers sequentially so earlier (cheaper) layers fire first.
-    // If a layer throws, we log and continue — one broken layer must not
-    // kill the entire review.
-    for (const layer of this.layers) {
-      try {
-        const layerComments = await layer.analyze(diff);
-        allComments.push(...layerComments);
-      } catch (err) {
-        console.error(`[ReviewPipeline] Layer "${layer.name}" threw:`, err);
-        // Graceful degradation — skip this layer, continue with the rest
-      }
-    }
+    const allComments = results
+      .filter((r) => r.status === 'fulfilled')
+      .flatMap((r) => (r as PromiseFulfilledResult<IReviewComment[]>).value);
 
     return this.deduplicate(allComments);
   }
