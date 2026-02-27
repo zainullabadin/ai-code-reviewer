@@ -57,7 +57,7 @@ export class RegexRuleLayer implements IReviewLayer {
     },
   ];
 
-  async analyze(diff: IParsedDiff): Promise<IReviewComment[]> {
+  analyze(diff: IParsedDiff): Promise<IReviewComment[]> {
     const comments: IReviewComment[] = [];
 
     for (const file of diff.files) {
@@ -81,6 +81,6 @@ export class RegexRuleLayer implements IReviewLayer {
       }
     }
 
-    return comments;
+    return Promise.resolve(comments);
   }
 }

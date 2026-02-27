@@ -13,9 +13,7 @@ export const validateBody = <T>(schema: ZodSchema<T>) => {
 
     if (!result.success) {
       const zodError = result.error as ZodError;
-      const messages = zodError.errors
-        .map((e) => `${e.path.join('.')}: ${e.message}`)
-        .join(', ');
+      const messages = zodError.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
       next(new APIError(`Validation error: ${messages}`, 400));
       return;
     }

@@ -57,12 +57,10 @@ export class ReviewPipelineService implements IReviewPipeline {
       } else {
         // Check if comments are substantially similar
         const distinctComments = this.filterSimilarComments(locationComments);
-        
+
         // Sort by severity and keep the most severe
-        distinctComments.sort(
-          (a, b) => severityWeight[b.severity] - severityWeight[a.severity],
-        );
-        
+        distinctComments.sort((a, b) => severityWeight[b.severity] - severityWeight[a.severity]);
+
         unique.push(distinctComments[0]);
       }
     }
@@ -102,7 +100,7 @@ export class ReviewPipelineService implements IReviewPipeline {
    * Check if two comment bodies are semantically similar
    */
   private areSimilar(body1: string, body2: string): boolean {
-    const normalize = (s: string) =>
+    const normalize = (s: string): string[] =>
       s
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')

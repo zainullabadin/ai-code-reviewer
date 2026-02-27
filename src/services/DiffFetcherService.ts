@@ -15,26 +15,26 @@ export class DiffFetcherService {
 
   /**
    * Fetches the raw diff for a pull request.
-   * 
+   *
    * - For 'opened' PRs: fetches entire PR diff
    * - For 'synchronize' (new commits): fetches only incremental diff between old and new commit
-   * 
+   *
    * Uses the `Accept: application/vnd.github.v3.diff` header so GitHub
    * returns the diff as plain text instead of JSON.
    */
   async fetchDiff(prContext: IPRContext): Promise<string> {
     let url: string;
-    
+
     // Incremental diff for new commits (avoids re-reviewing entire PR)
     if (prContext.previousCommitSha) {
       url = `${this.baseUrl}/repos/${prContext.owner}/${prContext.repo}/compare/${prContext.previousCommitSha}...${prContext.headCommitSha}`;
-      console.log(
+      console.info(
         `[DiffFetcher] Fetching incremental diff: ${prContext.previousCommitSha.slice(0, 7)}...${prContext.headCommitSha.slice(0, 7)}`,
       );
     } else {
       // Full PR diff for newly opened PRs
       url = `${this.baseUrl}/repos/${prContext.owner}/${prContext.repo}/pulls/${prContext.pullNumber}`;
-      console.log(`[DiffFetcher] Fetching full PR diff for #${prContext.pullNumber}`);
+      console.info(`[DiffFetcher] Fetching full PR diff for #${prContext.pullNumber}`);
     }
 
     const response = await axios.get<string>(url, {

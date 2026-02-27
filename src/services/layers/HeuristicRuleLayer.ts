@@ -28,7 +28,7 @@ export class HeuristicRuleLayer implements IReviewLayer {
     };
   }
 
-  async analyze(diff: IParsedDiff): Promise<IReviewComment[]> {
+  analyze(diff: IParsedDiff): Promise<IReviewComment[]> {
     const comments: IReviewComment[] = [];
 
     // ---- per-file heuristics --------------------------------------------
@@ -41,7 +41,7 @@ export class HeuristicRuleLayer implements IReviewLayer {
     // ---- whole-diff heuristics ------------------------------------------
     this.checkLargeCommit(diff, comments);
 
-    return comments;
+    return Promise.resolve(comments);
   }
 
   // ---- private heuristic methods ----------------------------------------
@@ -68,7 +68,8 @@ export class HeuristicRuleLayer implements IReviewLayer {
    * Uses a simple brace-counting approach on added lines.
    */
   private checkLongFunctions(file: IFileDiff, comments: IReviewComment[]): void {
-    const funcPattern = /^\s*(?:export\s+)?(?:async\s+)?(?:function\b|(?:const|let|var)\s+\w+\s*=\s*(?:async\s+)?(?:\([^)]*\)|\w+)\s*=>|\w+\s*\([^)]*\)\s*\{)/;
+    const funcPattern =
+      /^\s*(?:export\s+)?(?:async\s+)?(?:function\b|(?:const|let|var)\s+\w+\s*=\s*(?:async\s+)?(?:\([^)]*\)|\w+)\s*=>|\w+\s*\([^)]*\)\s*\{)/;
 
     for (const hunk of file.hunks) {
       let inFunction = false;

@@ -122,13 +122,13 @@ If no significant issues found, return: {"comments": []}
 
     for (const file of files) {
       const fileLines: string[] = [`### ${file.filename}`];
-      
+
       for (const hunk of file.hunks) {
         const relevantLines: string[] = [];
-        
+
         for (let i = 0; i < hunk.lines.length; i++) {
           const line = hunk.lines[i];
-          
+
           // Include context: 2 lines before and after each added line
           if (line.type === 'added') {
             // Add context before
@@ -138,11 +138,11 @@ If no significant issues found, return: {"comments": []}
                 relevantLines.push(`  ${contextLine.newLineNumber}: ${contextLine.content}`);
               }
             }
-            
+
             // Add the changed line
             relevantLines.push(`+ ${line.newLineNumber}: ${line.content}`);
             lineCount++;
-            
+
             // Add context after
             for (let j = i + 1; j < Math.min(hunk.lines.length, i + 3); j++) {
               const contextLine = hunk.lines[j];
@@ -151,23 +151,25 @@ If no significant issues found, return: {"comments": []}
               }
             }
           }
-          
+
           if (lineCount >= MAX_LINES) break;
         }
-        
+
         if (relevantLines.length > 0) {
           fileLines.push(relevantLines.join('\n'));
         }
-        
+
         if (lineCount >= MAX_LINES) break;
       }
-      
+
       if (fileLines.length > 1) {
         parts.push(fileLines.join('\n'));
       }
-      
+
       if (lineCount >= MAX_LINES) {
-        parts.push(`\n[Truncated: Reviewed first ${MAX_LINES} lines. Remaining files skipped for quality.]`);
+        parts.push(
+          `\n[Truncated: Reviewed first ${MAX_LINES} lines. Remaining files skipped for quality.]`,
+        );
         break;
       }
     }
@@ -177,10 +179,21 @@ If no significant issues found, return: {"comments": []}
 
   private shouldSkipFile(filename: string): boolean {
     const skipPatterns = [
-      '.test.ts', '.test.js', '.spec.ts', '.spec.js', // Tests
-      'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', // Lock files
-      '.min.js', '.bundle.js', '.map', // Minified/generated
-      'dist/', 'build/', 'node_modules/', '.next/', // Build outputs
+      '.test.ts',
+      '.test.js',
+      '.spec.ts',
+      '.spec.js', // Tests
+      'package-lock.json',
+      'yarn.lock',
+      'pnpm-lock.yaml',
+      'bun.lockb', // Lock files
+      '.min.js',
+      '.bundle.js',
+      '.map', // Minified/generated
+      'dist/',
+      'build/',
+      'node_modules/',
+      '.next/', // Build outputs
       '.d.ts', // Type definitions
       '.snap', // Snapshots
     ];
@@ -214,13 +227,7 @@ If no significant issues found, return: {"comments": []}
       const validFiles = new Set(diff.files.map((f) => f.filename));
 
       return parsed.comments
-        .filter(
-          (c) =>
-            c.filename &&
-            c.line &&
-            c.body &&
-            validFiles.has(c.filename),
-        )
+        .filter((c) => c.filename && c.line && c.body && validFiles.has(c.filename))
         .map((c) => ({
           filename: c.filename!,
           line: c.line!,

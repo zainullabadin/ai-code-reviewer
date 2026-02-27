@@ -63,11 +63,7 @@ export class GitHubNotifierService implements IVCSNotifier {
   /** Formats comment for GitHub - clean and professional */
   private formatComment(comment: IReviewComment): string {
     const emoji =
-      comment.severity === 'error'
-        ? '🔴'
-        : comment.severity === 'warning'
-          ? '🟡'
-          : '💡';
+      comment.severity === 'error' ? '🔴' : comment.severity === 'warning' ? '🟡' : '💡';
 
     return `${emoji} ${comment.body}`;
   }

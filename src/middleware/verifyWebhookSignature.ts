@@ -24,8 +24,7 @@ export const verifyWebhookSignature = (secret: string) => {
 
     // Get the raw body — express.json() with verify option stores it, or we stringify
     const rawBody: string =
-      (req as Request & { rawBody?: string }).rawBody ??
-      JSON.stringify(req.body);
+      (req as Request & { rawBody?: string }).rawBody ?? JSON.stringify(req.body);
 
     const expectedSignature =
       'sha256=' + createHmac('sha256', secret).update(rawBody).digest('hex');
@@ -33,10 +32,7 @@ export const verifyWebhookSignature = (secret: string) => {
     const sigBuffer = Buffer.from(signatureHeader);
     const expectedBuffer = Buffer.from(expectedSignature);
 
-    if (
-      sigBuffer.length !== expectedBuffer.length ||
-      !timingSafeEqual(sigBuffer, expectedBuffer)
-    ) {
+    if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
       next(new APIError('Invalid webhook signature', 401));
       return;
     }

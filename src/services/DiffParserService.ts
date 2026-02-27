@@ -18,8 +18,7 @@ export class DiffParserService implements IDiffParser {
   private static readonly FILE_HEADER_RE = /^diff --git a\/(.+?) b\/(.+)$/;
   private static readonly OLD_FILE_RE = /^--- (?:a\/)?(.+)$/;
   private static readonly NEW_FILE_RE = /^\+\+\+ (?:b\/)?(.+)$/;
-  private static readonly HUNK_HEADER_RE =
-    /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(.*)$/;
+  private static readonly HUNK_HEADER_RE = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(.*)$/;
 
   // ---- public API --------------------------------------------------------
 
@@ -116,15 +115,17 @@ export class DiffParserService implements IDiffParser {
 
     // ---- build the patch string for each file -----------------------------
     for (const file of files) {
-      file.patch = file.hunks.map((h) => {
-        const body = h.lines
-          .map((l) => {
-            const prefix = l.type === 'added' ? '+' : l.type === 'removed' ? '-' : ' ';
-            return prefix + l.content;
-          })
-          .join('\n');
-        return `${h.header}\n${body}`;
-      }).join('\n');
+      file.patch = file.hunks
+        .map((h) => {
+          const body = h.lines
+            .map((l) => {
+              const prefix = l.type === 'added' ? '+' : l.type === 'removed' ? '-' : ' ';
+              return prefix + l.content;
+            })
+            .join('\n');
+          return `${h.header}\n${body}`;
+        })
+        .join('\n');
     }
 
     const totalAdditions = files.reduce((sum, f) => sum + f.additions, 0);

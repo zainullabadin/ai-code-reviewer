@@ -1,4 +1,10 @@
-import type { IReviewLayer, IVCSNotifier, IPRContext, IReviewComment, IDiffParser } from '../interfaces';
+import type {
+  IReviewLayer,
+  IVCSNotifier,
+  IPRContext,
+  IReviewComment,
+  IDiffParser,
+} from '../interfaces';
 import { ReviewPipelineService } from './ReviewPipelineService';
 import { APIError } from '../errors/APIError';
 
@@ -17,7 +23,9 @@ export class ReviewOrchestrationService {
     private readonly diffParser: IDiffParser,
     layers: IReviewLayer[],
     private readonly notifier: IVCSNotifier | null = null,
-    private readonly diffFetcher: { fetchDiff(prContext: IPRContext): Promise<string> } | null = null,
+    private readonly diffFetcher: {
+      fetchDiff(prContext: IPRContext): Promise<string>;
+    } | null = null,
   ) {
     this.pipeline = new ReviewPipelineService(layers);
   }
@@ -25,21 +33,21 @@ export class ReviewOrchestrationService {
   /** Phase 2 entry-point — accepts a raw diff string, returns review comments. */
   async analyzeRawDiff(rawDiff: string): Promise<IReviewComment[]> {
     const parsed = this.diffParser.parse(rawDiff);
-    
+
     // Early exit: skip analysis if no additions
     const hasAdditions = parsed.files.some((f) => f.additions > 0);
     if (!hasAdditions) {
-      console.log('[Orchestration] No additions found, skipping analysis');
+      console.info('[Orchestration] No additions found, skipping analysis');
       return [];
     }
-    
+
     return this.pipeline.run(parsed);
   }
 
   /** Phase 3 entry-point — fetches diff from GitHub, runs pipeline, posts comments back. */
   async handlePullRequest(prContext: IPRContext): Promise<void> {
     const startTime = Date.now();
-    
+
     if (!this.notifier) {
       throw new APIError('No VCS notifier configured', 500);
     }
@@ -50,22 +58,26 @@ export class ReviewOrchestrationService {
     // 1. Fetch the raw diff from GitHub
     const rawDiff = await this.diffFetcher.fetchDiff(prContext);
     const diffStats = this.getDiffStats(rawDiff);
-    console.log(`[Orchestration] Diff: +${diffStats.additions} -${diffStats.deletions} in ${diffStats.files} file(s)`);
+    console.info(
+      `[Orchestration] Diff: +${diffStats.additions} -${diffStats.deletions} in ${diffStats.files} file(s)`,
+    );
 
     // 2. Parse + run the review pipeline
     const comments = await this.analyzeRawDiff(rawDiff);
 
     // 3. Log summary
-    const errors = comments.filter(c => c.severity === 'error').length;
-    const warnings = comments.filter(c => c.severity === 'warning').length;
-    const infos = comments.filter(c => c.severity === 'info').length;
+    const errors = comments.filter((c) => c.severity === 'error').length;
+    const warnings = comments.filter((c) => c.severity === 'warning').length;
+    const infos = comments.filter((c) => c.severity === 'info').length;
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-    
+
     if (comments.length > 0) {
-      console.log(`[Orchestration] Found ${comments.length} issue(s) in ${duration}s: 🔴 ${errors} 🟡 ${warnings} 💡 ${infos}`);
+      console.info(
+        `[Orchestration] Found ${comments.length} issue(s) in ${duration}s: 🔴 ${errors} 🟡 ${warnings} 💡 ${infos}`,
+      );
       await this.notifier.postReview(prContext, comments);
     } else {
-      console.log(`[Orchestration] ✅ No issues found (${duration}s)`);
+      console.info(`[Orchestration] ✅ No issues found (${duration}s)`);
     }
   }
 
