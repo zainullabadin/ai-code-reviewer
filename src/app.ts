@@ -15,6 +15,16 @@ export function createApp(): Application {
     }),
   );
 
+  // Parse URL-encoded bodies (GitHub webhooks can be form-encoded)
+  app.use(
+    express.urlencoded({
+      extended: true,
+      verify: (req, _res, buf) => {
+        (req as express.Request & { rawBody?: string }).rawBody = buf.toString();
+      },
+    }),
+  );
+
   // Health check — used to verify the server is running
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
