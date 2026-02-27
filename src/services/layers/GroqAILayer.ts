@@ -15,7 +15,7 @@ export class GroqAILayer implements IReviewLayer {
   private readonly client: Groq;
   private readonly model: string;
 
-  constructor(groqApiKey: string, model = 'llama-3.1-70b-versatile') {
+  constructor(groqApiKey: string, model = 'llama-3.1-70b-instruct') {
     this.client = new Groq({ apiKey: groqApiKey });
     this.model = model;
   }
