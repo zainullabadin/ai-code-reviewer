@@ -1,6 +1,6 @@
 # 🤖 AI Code Reviewer
 
-> **An intelligent GitHub bot that reviews your pull requests using AI** — Built to master SOLID principles through real-world application.
+> **An intelligent GitHub bot that reviews your pull requests using AI** 
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.2-black?logo=bun&logoColor=white)](https://bun.sh/)
